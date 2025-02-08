@@ -3,7 +3,7 @@
     public  class ShipmentStatusModel
     {
         public const string Waiting = "Waiting";
-        public const string Transportation = "Transportation";
-        public const string Completion = "Completion";
+        public const string Shipping = "Shipping";
+        public const string Completed = "Completed";
     }
 }

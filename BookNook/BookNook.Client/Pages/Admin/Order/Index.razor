@@ -192,7 +192,7 @@
 
                     <td>
                         <button class="action-button edit-button" @onclick="@(() => NavigateToDetailsPage(item.Id))">details</button>
-                        @if (item.ShipmentStatus!=ShipmentStatusModel.Completion)
+                        @if (item.ShipmentStatus != ShipmentStatusModel.Completed)
                         {
                             <button class="action-button edit-button" @onclick="@(() => NavigateToShipmentPage(item.ShipmentId))">shipment</button>
                         }

@@ -9,48 +9,64 @@
 
 <style>
     .product-detail-container {
-    width: 80%;
-    margin: 0 auto;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 20px;
+        width: 80%;
+        margin: 0 auto;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
     }
 
+    /* Back Button */
+    .back-button {
+        padding: 8px 15px;
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-bottom: 20px;
+        display: block;
+    }
+
+        .back-button:hover {
+            background-color: #5a6268;
+        }
+
     .product-detail-image {
-    width: 100%;
-    max-height: 400px;
-    object-fit: cover;
-    margin-bottom: 20px;
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+        object-fit: contain;
+        max-height: 300px;
     }
 
     .product-detail-name {
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 10px;
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 10px;
     }
 
     .product-detail-description {
-    font-size: 16px;
-    color: #666;
-    margin-bottom: 10px;
+        font-size: 16px;
+        color: #666;
+        margin-bottom: 10px;
     }
 
     .product-detail-price {
-    font-size: 20px;
-    font-weight: 600;
-    color: #e74c3c;
-    margin-bottom: 20px;
+        font-size: 20px;
+        font-weight: 600;
+        color: #e74c3c;
+        margin-bottom: 20px;
     }
 
-        /* 原价样式 */
     .original-price {
         text-decoration: line-through;
         color: #999;
         margin-right: 10px;
     }
 
-    /* 产品类型样式 */
     .product-type {
         font-size: 14px;
         color: #666;
@@ -58,27 +74,23 @@
     }
 
     .quantity-input {
-    width: 60px;
-    padding: 5px;
-    margin-right: 10px;
+        width: 60px;
+        padding: 5px;
+        margin-right: 10px;
     }
 
     .add-to-cart-button {
-    padding: 5px 15px;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+        padding: 5px 15px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
     }
 
-    .add-to-cart-button:hover {
-    background-color: #0056b3;
-    }
-
-    .add-to-cart-button:hover {
-    background-color: #0056b3;
-    }
+        .add-to-cart-button:hover {
+            background-color: #0056b3;
+        }
 
     .error-message {
         margin-top: 20px;
@@ -89,15 +101,17 @@
         color: #721c24;
         text-align: center;
     }
-   
 </style>
 
 <div class="product-detail-container">
+    <!-- Back Button -->
+    <button class="back-button" @onclick="GoBack">← Back</button>
+
     @if (product != null)
     {
         <img class="product-detail-image" src="/images/@product.ImagePath" alt="@product.Name" />
         <h2 class="product-detail-name">@product.Name</h2>
-        <p class="product-type">Type:@product.ItemTypeName</p>
+        <p class="product-type">Type: @product.ItemTypeName</p>
         <p class="product-detail-description">@product.Description</p>
 
         <p>
@@ -120,6 +134,7 @@
         <p>Product not found.</p>
     }
 </div>
+
 @if (!string.IsNullOrEmpty(ErrorMessage))
 {
     <div class="error-message">
@@ -131,26 +146,22 @@
     [Parameter]
     public int ProductId { get; set; }
     private string type;
-    
-    private Item product = new Item();
 
+    private Item product = new Item();
     private int quantity = 1;
     private string? ErrorMessage;
     private Cart cart = new Cart();
 
     protected override async Task OnInitializedAsync()
     {
-        // 解析查询字符串获取额外参数
         var uri = new Uri(Navigation.Uri);
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
         type = query["type"];
 
-        // 对获取到的参数进行解码
         type = System.Net.WebUtility.UrlDecode(type);
 
         product = await Http.GetFromJsonAsync<Item>($"api/Item/getItemById?id={ProductId}");
     }
-
 
     private async Task AddToCart()
     {
@@ -168,18 +179,21 @@
             }
             else
             {
-                // Capture error message and display it
                 var error = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Error from server: {error}"); // Debugging log
+                Console.WriteLine($"Error from server: {error}");
                 ErrorMessage = error;
-                StateHasChanged(); // Ensure UI is updated
+                StateHasChanged();
             }
         }
         catch (Exception ex)
         {
             ErrorMessage = $"An unexpected error occurred: {ex.Message}";
-            StateHasChanged(); // Ensure UI is updated
+            StateHasChanged();
         }
     }
 
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/" + (type == "home" ? "userHome/index" : "userItem/index"));
+    }
 }

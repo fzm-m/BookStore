@@ -117,7 +117,7 @@
 
         @if (user.DiscountRate!=0)
         {
-            <p>You are a member of level @user.MembershipLevelName with a @(user.DiscountRate * 100) % discount rate.</p>
+            <p>You are a member of level @user.MembershipLevelName with a @((1 - user.DiscountRate) * 100)% discount rate.</p>
         }
         else
         {
