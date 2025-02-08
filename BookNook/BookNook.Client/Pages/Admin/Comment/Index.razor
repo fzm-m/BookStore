@@ -1,0 +1,196 @@
+﻿@page "/comment/index"
+@using BookNook.Client.Layout
+@layout AdminLayout
+@rendermode InteractiveWebAssembly
+@using BookNook.Client.Models;
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IJSRuntime JsRuntime
+
+<style>
+    .product-type-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+        .product-type-container h3 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+    .search-container {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 0;
+    }
+
+    .search-input {
+        width: 250px;
+    }
+
+    .search-select {
+        width: 200px;
+    }
+
+    .search-button {
+        height: 38px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .create-button:hover {
+        background-color: #0056b3;
+    }
+
+    .create-button {
+        height: 38px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        .create-button:hover {
+            background-color: #218838;
+        }
+
+    .product-type-table {
+        width: 100%;
+        border-collapse: collapse;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+        .product-type-table th,
+        .product-type-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .product-type-table th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+
+        .product-type-table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+    .action-button {
+        padding: 8px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-right: 5px;
+    }
+
+    .edit-button {
+        background-color: #007bff;
+        color: white;
+    }
+
+        .edit-button:hover {
+            background-color: #0069d9;
+        }
+
+    .delete-button {
+        background-color: #dc3545;
+        color: white;
+    }
+
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+
+    .pagination-container {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .pagination-button {
+        background-color: #f8f9fa;
+        color: #333;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        margin: 0 5px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        .pagination-button:disabled {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .pagination-button:hover:not(:disabled) {
+            background-color: #e2e6ea;
+        }
+</style>
+
+<div class="product-type-container">
+    <h3>Comment </h3>
+
+    <table class="product-type-table">
+        <thead>
+            <tr>
+                <th>Img</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Comment</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td> <img src="/images/@item.image" alt="Item Image" style="max-width: 100px; max-height: 100px;" /></td>
+                    <td>@item.ItemName</td>
+                    <td>@item.Description</td>
+                    <td>@item.Price</td>
+                    <td>@item.Comment</td>
+
+                   
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>
+
+
+@code {
+    private List<Review> items = new List<Review>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+            await LoadProducts();
+        
+    }
+    private async Task LoadProducts()
+    {
+        items = await Http.GetFromJsonAsync<List<Review>>($"api/Comment/GetReview");
+
+    }
+
+}

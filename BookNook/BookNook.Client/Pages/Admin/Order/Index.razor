@@ -1,0 +1,273 @@
+﻿@page "/order/index"
+@using BookNook.Client.Layout
+@layout AdminLayout
+@rendermode InteractiveWebAssembly
+@using BookNook.Client.Models;
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IJSRuntime JsRuntime
+
+<style>
+    .product-type-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+        .product-type-container h3 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+    .search-container {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 0;
+    }
+
+    .search-input {
+        width: 250px;
+    }
+
+    .search-select {
+        width: 200px;
+    }
+
+    .search-button {
+        height: 38px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .create-button:hover {
+        background-color: #0056b3;
+    }
+
+    .create-button {
+        height: 38px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        .create-button:hover {
+            background-color: #218838;
+        }
+
+    .product-type-table {
+        width: 100%;
+        border-collapse: collapse;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+        .product-type-table th,
+        .product-type-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .product-type-table th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+
+        .product-type-table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+    .action-button {
+        padding: 8px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-right: 5px;
+    }
+
+    .edit-button {
+        background-color: #007bff;
+        color: white;
+    }
+
+        .edit-button:hover {
+            background-color: #0069d9;
+        }
+
+    .delete-button {
+        background-color: #dc3545;
+        color: white;
+    }
+
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+
+    .pagination-container {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .pagination-button {
+        background-color: #f8f9fa;
+        color: #333;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        margin: 0 5px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        .pagination-button:disabled {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .pagination-button:hover:not(:disabled) {
+            background-color: #e2e6ea;
+        }
+</style>
+
+<div class="product-type-container">
+    <h3>Order Management</h3>
+
+    <div class="search-container">
+        <div class="form-group">
+            <InputText type="text" @bind-Value="userName" class="form-control search-input" placeholder="Search by userName" />
+        </div>
+
+        <div class="form-group">
+            <InputSelect id="shipmentStatus" @bind-Value="shipmentStatus" class="form-control search-select">
+                <option value="0">-- Select Item Type --</option>
+                <option value="Waiting">Waiting</option>
+                <option value="Transportation">Transportation</option>
+                <option value="Completion">Completion</option>
+            </InputSelect>
+        </div>
+
+        <button class="btn btn-success search-button" @onclick="SearchItems">Search</button>
+    </div>
+
+
+
+    <table class="product-type-table">
+        <thead>
+            <tr>
+                <th>UserName</th>
+                <th>RecipientName</th>
+                <th>TotalPrice</th>
+                <th>OrderDate</th>
+                <th>Status</th>
+
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.UserName</td>
+                    <td>@item.RecipientName</td>
+                    <td>@item.TotalPrice</td>
+                    <td>@item.OrderDate</td>
+                    <td>@item.ShipmentStatus</td>
+
+                    <td>
+                        <button class="action-button edit-button" @onclick="@(() => NavigateToDetailsPage(item.Id))">details</button>
+                        @if (item.ShipmentStatus!=ShipmentStatusModel.Completion)
+                        {
+                            <button class="action-button edit-button" @onclick="@(() => NavigateToShipmentPage(item.ShipmentId))">shipment</button>
+                        }
+                       
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+    <div class="pagination-container">
+        <button class="pagination-button" @onclick="PreviousPage" disabled="@(currentPage == 1)">Previous Page</button>
+        <button class="pagination-button" @onclick="NextPage" disabled="@(currentPage == totalPages)">Next Page</button>
+    </div>
+</div>
+
+
+@code {
+    private List<Order> items = new List<Order>();
+    private int currentPage = 1;
+    private int pageSize = 5;
+    private int totalCount;
+    private int totalPages;
+
+    private string userName = "";
+    private string shipmentStatus;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProducts();
+    }
+    private async Task SearchItems()
+    {
+
+        currentPage = 1;
+        await LoadProducts();
+    }
+
+    private async Task LoadProducts()
+    {
+        totalCount = await Http.GetFromJsonAsync<int>($"api/Order/getTotalCount?userName={userName}&shipmentStatus={shipmentStatus}");
+        items = await Http.GetFromJsonAsync<List<Order>>($"api/Order?page={currentPage}&pageSize={pageSize}&userName={userName}&shipmentStatus={shipmentStatus}");
+
+        totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+    }
+    private async Task PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadProducts();
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            await LoadProducts();
+        }
+    }
+
+    private void NavigateToDetailsPage(string id)
+    {
+        Navigation.NavigateTo($"/order/details/{id}");
+    }
+    private void NavigateToShipmentPage(string id)
+    {
+        Navigation.NavigateTo($"/order/editShipment/{id}");
+    }
+
+
+  
+  
+
+ 
+}

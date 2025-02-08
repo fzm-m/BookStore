@@ -1,0 +1,183 @@
+﻿@page "/userItem/index"
+@using BookNook.Client.Layout
+@layout UserLayout
+@rendermode InteractiveWebAssembly
+@using BookNook.Client.Models;
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IJSRuntime JsRuntime
+
+<style>
+    .search-container {
+        text-align:center;
+        width:50%;
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+        margin: 0px auto 20px auto;
+    }
+
+    .form-group {
+        margin-bottom: 0;
+    }
+
+    .search-input {
+        width: 250px;
+    }
+
+    .search-select {
+        width: 200px;
+    }
+
+    .search-button {
+        height: 38px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+
+    .product-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        padding: 20px;
+        width: 80%;
+        margin: 0 auto;
+    }
+
+    .product-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+    .product-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .product-info {
+        padding: 20px;
+    }
+
+    .product-name {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .product-description {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 10px;
+    }
+
+    .product-price {
+        font-size: 18px;
+        font-weight: 600;
+        color: #e74c3c;
+    }
+
+    /* 原价样式 */
+    .original-price {
+        text-decoration: line-through;
+        color: #999;
+        margin-right: 10px;
+    }
+
+    /* 产品类型样式 */
+    .product-type {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 5px;
+    }
+</style>
+
+<div class="search-container">
+    <div class="form-group">
+        <InputText type="text" @bind-Value="searchItemName" class="form-control search-input" placeholder="Search by Item Name" />
+    </div>
+
+    <div class="form-group">
+        <InputSelect id="searchItemTypeId" @bind-Value="searchItemTypeId" class="form-control search-select">
+            <option value="0">-- Select Item Type --</option>
+            @foreach (var itemType in itemTypeList)
+            {
+                <option value="@itemType.Id">@itemType.Name</option>
+            }
+        </InputSelect>
+    </div>
+
+    <button class="btn btn-success search-button" @onclick="SearchItems">Search</button>
+</div>
+
+<div class="product-list">
+
+    @foreach (var product in products)
+    {
+        <div class="product-card" @onclick="@(() => NavigateToProductDetail(product.Id))">
+            <img class="product-image" src="/images/@product.ImagePath" alt="@product.Name" />
+            <div class="product-info">
+                <h3 class="product-name">@product.Name</h3>
+                <p class="product-type">Type: @product.ItemTypeName</p>
+                <p class="product-description">@product.Description</p>
+                <p>
+                    @if (@product.PromotionId == 0)
+                    {
+                        <span class="product-price">$@product.Price</span>
+                    }
+                    else
+                    {
+                        <span class="original-price">$@product.Price</span>
+                        <span class="product-price">$@product.DiscountedPrice</span>
+                    }
+                </p>
+            </div>
+        </div>
+    }
+
+</div>
+
+
+
+@code {
+    private List<ItemType> itemTypeList = new List<ItemType>();
+    private string searchItemName = "";
+    private int searchItemTypeId;
+
+    private List<Item> products = new List<Item>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        itemTypeList = await Http.GetFromJsonAsync<List<ItemType>>($"api/ItemType/getItemTypeList");
+        await LoadProducts();
+      
+    }
+    private async Task SearchItems()
+    {
+        await LoadProducts();
+    }
+    private async Task LoadProducts()
+    {
+        products = await Http.GetFromJsonAsync<List<Item>>($"api/Item/GetItemList?searchItemTypeId={searchItemTypeId}&searchItemName={searchItemName}");
+        
+    }
+
+
+
+    private void NavigateToProductDetail(int productId)
+    {
+        Navigation.NavigateTo($"/userItem/itemDetail/{productId}?type=item");
+    }
+}

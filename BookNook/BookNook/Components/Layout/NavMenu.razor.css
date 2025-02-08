@@ -1,0 +1,94 @@
+.top-menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #063547; 
+    color: white;
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.menu-left .menu-title {
+    font-size: 24px;
+    text-decoration: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+    .menu-left .menu-title:hover {
+        color: #FFA500; 
+        transform: scale(1.1); 
+    }
+
+.menu-middle .menu-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+    .menu-middle .menu-list li {
+        margin-right: 20px;
+    }
+
+        .menu-middle .menu-list li a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            position: relative; 
+        }
+
+            .menu-middle .menu-list li a::before {
+                content: "";
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 0;
+                height: 2px;
+                background-color: #FFA500;
+                transition: width 0.3s ease;
+            }
+
+            .menu-middle .menu-list li a:hover {
+                color: #FFA500;
+                background-color: rgba(255, 165, 0, 0.1); 
+            }
+
+                .menu-middle .menu-list li a:hover::before {
+                    width: 100%; 
+                }
+
+.menu-right {
+    text-align: right;
+}
+
+    .menu-right a {
+        color: white;
+        text-decoration: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+        .menu-right a::before {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #FFA500;
+            transition: width 0.3s ease;
+        }
+
+        .menu-right a:hover {
+            color: #FFA500;
+            background-color: rgba(255, 165, 0, 0.1);
+        }
+
+            .menu-right a:hover::before {
+                width: 100%;
+            }

@@ -1,0 +1,99 @@
+﻿@page "/counter"
+@rendermode InteractiveWebAssembly
+@using BookNook.Client.Models;
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in products)
+        {
+            <tr>
+                <td>@product.Id</td>
+                <td>@product.Name</td>
+                <td>@product.Price</td>
+
+            </tr>
+        }
+    </tbody>
+</table>
+<hr />
+<button @onclick="ShowAddForm">Add Product</button>
+<button @onclick="RefreshProducts">sx</button>
+@if (isAdding)
+{
+    <div>
+        <h4>Add Product</h4>
+        <input @bind-value="newProduct.Name" placeholder="Name" />
+        <input @bind-value="newProduct.Price" placeholder="Price" />
+    </div>
+}
+@code {
+     public class Product
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public decimal Price { get; set; }
+    }
+
+    private List<Product> products = new List<Product>();
+    private Product newProduct = new Product();
+    private bool isAdding = false;
+
+    private void ShowAddForm()
+    {
+        newProduct = new Product();
+        isAdding = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await RefreshProducts();
+    }
+
+    private async Task RefreshProducts()
+    {
+        try
+        {
+            string ssss = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "token");
+            if (string.IsNullOrEmpty(ssss))
+            {
+                Navigation.NavigateTo("/login");
+            }else{
+                Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ssss);
+
+                List<Product> newlist = await Http.GetFromJsonAsync<List<Product>>("api/Product/GetAll");
+            }
+           
+        }
+        catch (Exception ex)
+        {
+           string errorMessage = ex.Message;
+        }
+       
+    }
+
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>BookNook</title>
+    <base href="/" />
+    <link href="css/app.css" rel="stylesheet" />
+    <!-- 其他已有的头部内容 -->
+</head>
+<body>
+    <div id="app">Loading...</div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+    <!-- 添加我们的自定义脚本 -->
+    <script>
+        window.navMenuFunctions = {
+            initialize: function (dotNetRef) {
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', function () {
+                        dotNetRef.invokeMethodAsync('OnPageLoaded');
+                    });
+                } else {
+                    dotNetRef.invokeMethodAsync('OnPageLoaded');
+                }
+            }
+        };
+    </script>
+</body>
+</html> 

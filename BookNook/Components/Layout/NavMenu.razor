@@ -1,0 +1,25 @@
+@inject IJSRuntime JsRuntime
+@implements IAsyncDisposable
+
+<nav class="top-menu">
+    // ... existing code ...
+</nav>
+
+@code {
+    private DotNetObjectReference<NavMenu>? objRef;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            objRef = DotNetObjectReference.Create(this);
+            await JsRuntime.InvokeVoidAsync("navMenuFunctions.initialize", objRef);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"初始化错误: {ex.Message}");
+        }
+    }
+
+    // ... rest of the code remains the same ...
+} 

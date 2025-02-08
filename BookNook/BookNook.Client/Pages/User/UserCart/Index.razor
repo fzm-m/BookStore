@@ -1,0 +1,394 @@
+﻿@page "/userCart/index/"
+@using BookNook.Client.Layout
+@layout UserLayout
+@rendermode InteractiveWebAssembly
+@using BookNook.Client.Models;
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IJSRuntime JsRuntime
+
+<style>
+    .cart-container {
+    width: 80%;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    }
+
+    .cart-item {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    padding: 10px 0;
+    }
+
+    .cart-item-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    margin-right: 20px;
+    }
+
+    .cart-item-info {
+    flex-grow: 1;
+    }
+
+    .cart-item-name {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    }
+
+    .cart-item-description {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+    }
+
+    .cart-item-price {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e74c3c;
+    margin-bottom: 5px;
+    }
+    .original-price {
+    text-decoration: line-through;
+    color: #999;
+    margin-right: 10px;
+    }
+    .cart-item-quantity {
+    font-size: 14px;
+    color: #666;
+    }
+
+    .select-checkbox {
+    margin-right: 10px;
+    }
+
+    .place-order-button {
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 20px;
+    }
+
+    .place-order-button:hover {
+    background-color: #0056b3;
+    }
+
+    .delete-button {
+    padding: 10px 20px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 20px;
+    }
+
+    .delete-button:hover {
+    background-color: #c82333;
+    }
+
+    .error-message {
+    margin-top: 20px;
+    padding: 12px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 5px;
+    color: #721c24;
+    text-align: center;
+    }
+
+    .order-panel {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    }
+
+    .order-panel label {
+    display: block;
+    margin-bottom: 5px;
+    }
+
+    .order-panel input,
+    .order-panel select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    }
+
+    .submit-button {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    }
+
+    .submit-button:hover {
+    background-color: #218838;
+    }
+</style>
+
+<div class="cart-container">
+    <h2>My Cart</h2>
+
+    @foreach (var cartItem in cartItems)
+    {
+        <div class="cart-item">
+            <input type="checkbox" class="select-checkbox" @bind="cartItem.IsSelected" />
+            <img class="cart-item-image" src="/images/@cartItem.ImagePath" alt="@cartItem.Name" />
+            <div class="cart-item-info">
+                <h3 class="cart-item-name">@cartItem.Name</h3>
+                <p class="cart-item-description">@cartItem.Description</p>
+
+                @if (@cartItem.DiscountedPrice == 0)
+                {
+                    <span class="cart-item-price">$@cartItem.Price</span>
+                }
+                else
+                {
+                    <span class="original-price">$@cartItem.Price</span>
+                    <span class="cart-item-price">$@cartItem.DiscountedPrice</span>
+                }
+
+                <p class="cart-item-quantity">Quantity: @cartItem.ItemNumber</p>
+            </div>
+        </div>
+    }
+
+    <button class="place-order-button" @onclick="PlaceOrder">Place Order</button>
+    <button class="delete-button" @onclick="Delete">Delete</button>
+</div>
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="error-message">
+        @ErrorMessage
+    </div>
+}
+
+@if(IsOrderPanelVisible){
+    <div class="order-panel" id="orderPanel">
+        <p>Total Price: <span id="totalPrice">$@totalPrice</span></p>
+        @if (user.DiscountRate!=0)
+        {
+            <p>Discount Rate: <span id="discountRate">@(user.DiscountRate*100)%</span></p>
+            <p>Discounted Total Price: <span id="discountedTotalPrice">$@discountedTotalPrice</span></p>
+        }
+        <EditForm Model="@placeOrderModel" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <label for="RecipientName">RecipientName</label>
+                <InputText id="RecipientName" @bind-Value="placeOrderModel.RecipientName" class="form-control" />
+                <ValidationMessage For="@(() => placeOrderModel.RecipientName)" />
+            </div>
+            <div class="form-group">
+                <label for="RecipientPhone">RecipientPhone</label>
+                <InputText id="RecipientPhone" @bind-Value="placeOrderModel.RecipientPhone" class="form-control" />
+                <ValidationMessage For="@(() => placeOrderModel.RecipientPhone)" />
+            </div>
+            <div class="form-group">
+                <label for="RecipientAddress">RecipientAddress</label>
+                <InputText id="RecipientAddress" @bind-Value="placeOrderModel.RecipientAddress" class="form-control" />
+                <ValidationMessage For="@(() => placeOrderModel.RecipientAddress)" />
+            </div>
+
+            <div class="form-group">
+                <label for="ItemTypeId">ItemTypeId</label>
+
+                <InputSelect id="ItemTypeId" @bind-Value="placeOrderModel.PaymentMethod" class="form-control">
+                    <option value="SelectPaymentMethod">-- Select PaymentMethod --</option>
+                    <option value="CreditCard">Credit Card</option>
+                    <option value="PayPal">PayPal</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                </InputSelect>
+            </div>
+            <div class="form-group">
+                <label for="PaymentAmount">PaymentAmount</label>
+                <InputText id="PaymentAmount" @bind-Value="placeOrderModel.PaymentAmount" class="form-control" />
+                <ValidationMessage For="@(() => placeOrderModel.PaymentAmount)" />
+            </div>
+            <button type="submit">Save</button>
+        </EditForm>
+    </div>
+}
+
+
+@code {
+    private string? ErrorMessage;
+    private List<Cart> cartItems = new List<Cart>();
+    private List<Cart> selectedItems = new List<Cart>();
+
+    private User user=new User();
+    private bool IsOrderPanelVisible = false;
+    private decimal totalPrice;
+    private decimal discountedTotalPrice;
+
+    private PlaceOrderModel placeOrderModel = new PlaceOrderModel(){
+        orderDetailsList=new List<OrderDetails>()
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProducts();
+
+    }
+    private async Task LoadProducts()
+    {
+        cartItems = await Http.GetFromJsonAsync<List<Cart>>($"api/Cart");
+    }
+    private async Task PlaceOrder()
+    {
+        if (IsOrderPanelVisible)
+        {
+            return;
+        }
+
+        selectedItems = cartItems.Where(item => item.IsSelected).ToList();
+
+        if (selectedItems.Count > 0)
+        {
+            try
+            {
+                string userId = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "userId");
+                user = await Http.GetFromJsonAsync<User>($"api/Account/GetUser?userId={userId}");
+                IsOrderPanelVisible = true;
+
+                foreach (Cart cartItem in selectedItems)
+                {
+                    if (cartItem.DiscountedPrice > 0)
+                    {
+                        totalPrice += cartItem.DiscountedPrice * cartItem.ItemNumber;
+                    }
+                    else
+                    {
+                        totalPrice += cartItem.Price * cartItem.ItemNumber;
+                    }
+                }
+
+                if (user.DiscountRate != 0)
+                {
+                    discountedTotalPrice = Math.Round(totalPrice * user.DiscountRate, 2);
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                ErrorMessage = ex.Message; // Show the error message from the backend
+            }
+            StateHasChanged();
+        }
+        else
+        {
+            ErrorMessage = $"Please select at least one item to place an order.";
+            await Task.Delay(1000);
+            ErrorMessage = null;
+            StateHasChanged();
+        }
+    }
+
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            if (placeOrderModel.PaymentMethod == null || placeOrderModel.PaymentMethod == "SelectPaymentMethod")
+            {
+                ErrorMessage = "Please choose a payment method!";
+                await Task.Delay(1000);
+                ErrorMessage = null;
+                StateHasChanged();
+                return;
+            }
+
+            placeOrderModel.UserId = user.UserId;
+            if (user.DiscountRate != 0)
+            {
+                placeOrderModel.TotalPrice = discountedTotalPrice;
+            }
+            else
+            {
+                placeOrderModel.TotalPrice = totalPrice;
+            }
+            foreach (Cart cart in selectedItems)
+            {
+                OrderDetails orderDetails = new OrderDetails();
+                orderDetails.ItemId = cart.ItemId;
+                orderDetails.Quantity = cart.ItemNumber;
+                orderDetails.TotalPrice = cart.Price * cart.ItemNumber;
+                placeOrderModel.orderDetailsList.Add(orderDetails);
+            }
+            var response = await Http.PostAsJsonAsync($"api/Order/CreateOrder", placeOrderModel);
+            if (response.IsSuccessStatusCode)
+            {
+                bool IsSuccess = false;
+                foreach (Cart cart in selectedItems)
+                {
+                    var res = await Http.DeleteAsync($"api/Cart/{cart.Id}");
+                    if (res.IsSuccessStatusCode)
+                    {
+                        IsSuccess = true;
+                    }
+                }
+                if (IsSuccess)
+                {
+                    await LoadProducts();
+                 selectedItems = new List<Cart>();
+
+
+    IsOrderPanelVisible = false;
+   totalPrice=0;
+     discountedTotalPrice=0;
+                }
+            }
+            
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"An error occurred: {ex.Message}";
+        }
+    }
+
+    private async Task Delete()
+    {
+        List<Cart> selectedItems = cartItems.Where(item => item.IsSelected).ToList();
+        if (selectedItems.Count > 0)
+        {
+            try
+            {
+                foreach (Cart cart in selectedItems)
+                {
+                    var response = await Http.DeleteAsync($"api/Cart/{cart.Id}");
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var error = await response.Content.ReadAsStringAsync();
+                        ErrorMessage = error;
+                    }
+                }
+                await LoadProducts();
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"An error occurred: {ex.Message}";
+            }
+        }
+        else
+        {
+            ErrorMessage = $"Please select the item to delete.";
+            await Task.Delay(1000);
+            ErrorMessage = null;
+            StateHasChanged();
+        }
+    }
+}

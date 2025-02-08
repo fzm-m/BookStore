@@ -1,0 +1,170 @@
+﻿@page "/order/editShipment/{Id}"
+@using BookNook.Client.Layout
+@layout AdminLayout
+@rendermode InteractiveWebAssembly
+@using BookNook.Client.Models;
+@inject NavigationManager Navigation
+@inject HttpClient Http
+
+<style>
+    /* 整体容器样式 */
+    .edit-product-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* 标题样式 */
+    .edit-product-container h3 {
+    text-align: center;
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 20px;
+    }
+
+    /* 加载提示样式 */
+    .loading-message {
+    color: #999;
+    font-size: 16px;
+    text-align: center;
+    }
+
+    /* 表单组样式 */
+    .form-group {
+    margin-bottom: 20px;
+    }
+
+    .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    }
+
+    .form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+    }
+
+    .form-group input:focus {
+    border-color: #007BFF;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    }
+
+    /* 按钮样式 */
+    button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    margin-right: 10px;
+    }
+
+    button[type="submit"] {
+    background-color: #007BFF;
+    color: #fff;
+    }
+
+    button[type="submit"]:hover {
+    background-color: #0056b3;
+    }
+
+    button:not([type="submit"]) {
+    background-color: #6c757d;
+    color: #fff;
+    }
+
+    button:not([type="submit"]):hover {
+    background-color: #5a6268;
+    }
+
+    /* 错误消息样式 */
+    .error-message {
+    margin-top: 20px;
+    padding: 12px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 5px;
+    color: #721c24;
+    text-align: center;
+    }
+</style>
+
+<div class="edit-product-container">
+    <h3>Edit Shipment</h3>
+
+
+    <div class="form-group">
+        <InputSelect id="shipmentStatus" @bind-Value="shipmentStatus" class="form-control search-select">
+            <option value="0">-- Select Item Type --</option>
+            <option value="Waiting">Waiting</option>
+            <option value="Transportation">Transportation</option>
+            <option value="Completion">Completion</option>
+        </InputSelect>
+    </div>
+    <button @onclick="HandleValidSubmit" type="submit">Save</button>
+    <button @onclick="CancelEdit">Cancel</button>
+
+
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="error-message">
+            @ErrorMessage
+        </div>
+    }
+
+
+</div>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    private string? ErrorMessage;
+    private string shipmentStatus;
+
+
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            if (shipmentStatus == null||shipmentStatus == "0")
+            {
+                ErrorMessage = $"Please select the shipping status";
+                await Task.Delay(1000);
+                ErrorMessage = null;
+                return;
+            }
+
+            var response = await Http.PutAsJsonAsync($"api/Order/EditShipment/{Id}", shipmentStatus);
+            if (response.IsSuccessStatusCode)
+            {
+
+                Navigation.NavigateTo("/order/index");
+
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"An error occurred: {ex.Message}";
+            await Task.Delay(1000);
+            ErrorMessage = null;
+        }
+    }
+
+    private void CancelEdit()
+    {
+        Navigation.NavigateTo("/order/index");
+    }
+}

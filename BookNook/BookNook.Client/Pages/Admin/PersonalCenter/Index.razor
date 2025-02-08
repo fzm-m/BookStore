@@ -1,0 +1,163 @@
+﻿@page "/personalCenter/index"
+@using BookNook.Client.Layout
+@layout AdminLayout
+@rendermode InteractiveWebAssembly
+@using BookNook.Client.Models;
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IJSRuntime JsRuntime
+
+
+<style>
+    /* 外层容器样式，设置宽度为 80% 并水平居中 */
+    .personal-center-container {
+        width: 80%;
+        margin: 0 auto;
+    }
+
+    .panel {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .panel-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .error-message {
+        color: red;
+        margin-top: 5px;
+    }
+
+    .success-message {
+        color: green;
+        margin-top: 5px;
+    }
+
+    .error-message {
+        margin-top: 20px;
+        padding: 12px;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 5px;
+        color: #721c24;
+        text-align: center;
+    }
+</style>
+
+<div class="personal-center-container">
+    <div class="panel">
+        <h2 class="panel-title">Admin Information</h2>
+        <p><strong>User Name:</strong> @user.UserName</p>
+        <p><strong>First Name:</strong> @user.FirstName</p>
+        <p><strong>Last Name:</strong> @user.LastName</p>
+        <p><strong>Email:</strong> @user.Email</p>
+    </div>
+
+    <div class="panel">
+        <h2 class="panel-title">Change Password</h2>
+        <EditForm Model="@user" OnValidSubmit="@ChangePassword">
+            <DataAnnotationsValidator />
+            <div class="form-group">
+                <label class="form-label" for="oldPassword">Old Password</label>
+                <InputText id="oldPassword" type="password" class="form-input" @bind-Value="user.OldPassword" />
+                <ValidationMessage For="@(() => user.OldPassword)" />
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="newPassword">New Password</label>
+                <InputText id="newPassword" type="password" class="form-input" @bind-Value="user.NewPassword" />
+                <ValidationMessage For="@(() => user.NewPassword)" />
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="confirmPassword">Confirm New Password</label>
+                <InputText id="confirmPassword" type="password" class="form-input" @bind-Value="user.ConfirmPassword" />
+                <ValidationMessage For="@(() => user.ConfirmPassword)" />
+
+
+            </div>
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="error-message">
+                    @ErrorMessage
+                </div>
+            }
+            <button type="submit" class="btn btn-primary">Change Password</button>
+
+            @if (!string.IsNullOrEmpty(passwordChangeMessage))
+            {
+                <p class="@(passwordChangeSuccess ? "success-message" : "error-message")">@passwordChangeMessage</p>
+            }
+
+        </EditForm>
+    </div>
+
+   
+</div>
+
+@code {
+    private string? ErrorMessage;
+    private User user = new User();
+
+    private string passwordChangeMessage = "";
+    private bool passwordChangeSuccess = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            string userId = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "userId");
+            user = await Http.GetFromJsonAsync<User>($"api/Account/GetUser?userId={userId}");
+            StateHasChanged();
+        }
+    }
+
+    private async Task ChangePassword()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync($"api/Account/ChangePassword", user);
+            if (response.IsSuccessStatusCode)
+            {
+                ErrorMessage = "";
+                passwordChangeSuccess = true;
+                passwordChangeMessage = "Password changed successfully.";
+                user.OldPassword = "";
+                user.NewPassword = "";
+                user.ConfirmPassword = "";
+            }
+            else
+            {
+                ErrorMessage = await response.Content.ReadAsStringAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"An error occurred: {ex.Message}";
+        }
+
+    }
+ 
+
+
+}

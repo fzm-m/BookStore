@@ -1,0 +1,342 @@
+﻿@page "/item/index"
+@using BookNook.Client.Layout
+@layout AdminLayout
+@rendermode InteractiveWebAssembly
+@using BookNook.Client.Models;
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IJSRuntime JsRuntime
+
+<style>
+    .product-type-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .product-type-container h3 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 20px;
+    }
+
+    .search-container {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 0;
+    }
+
+    .search-input {
+        width: 250px;
+    }
+
+    .search-select {
+        width: 200px;
+    }
+
+    .search-button {
+        height: 38px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .create-button:hover {
+        background-color: #0056b3;
+    }
+
+    .create-button {
+        height: 38px; 
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    }
+
+    .create-button:hover {
+    background-color: #218838;
+    }
+
+    .product-type-table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-type-table th,
+    .product-type-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    }
+
+    .product-type-table th {
+    background-color: #f2f2f2;
+    color: #333;
+    }
+
+    .product-type-table tr:hover {
+    background-color: #f5f5f5;
+    }
+
+    .action-button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-right: 5px;
+    }
+
+    .edit-button {
+    background-color: #007bff;
+    color: white;
+    }
+
+    .edit-button:hover {
+    background-color: #0069d9;
+    }
+
+    .delete-button {
+    background-color: #dc3545;
+    color: white;
+    }
+
+    .delete-button:hover {
+    background-color: #c82333;
+    }
+
+    .pagination-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    }
+
+    .pagination-button {
+    background-color: #f8f9fa;
+    color: #333;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    margin: 0 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    }
+
+    .pagination-button:disabled {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    }
+
+    .pagination-button:hover:not(:disabled) {
+    background-color: #e2e6ea;
+    }
+</style>
+
+<div class="product-type-container">
+    <h3>Item Management</h3>
+
+    <div class="search-container">
+        <!-- 搜索输入框 -->
+        <div class="form-group">
+            <InputText type="text" @bind-Value="searchItemName" class="form-control search-input" placeholder="Search by Item Name" />
+        </div>
+
+        <!-- 下拉选择框 -->
+        <div class="form-group">
+            <InputSelect id="searchItemTypeId" @bind-Value="searchItemTypeId" class="form-control search-select">
+                <option value="0">-- Select Item Type --</option>
+                @foreach (var itemType in itemTypeList)
+                {
+                    <option value="@itemType.Id">@itemType.Name</option>
+                }
+            </InputSelect>
+        </div>
+
+        <!-- 搜索按钮 -->
+        <button class="btn btn-success search-button" @onclick="SearchItems">Search</button>
+
+        <!-- 创建按钮 -->
+        <button class="btn btn-success create-button" @onclick="NavigateToCreatePage">Create</button>
+    </div>
+
+   
+
+    <table class="product-type-table">
+        <thead>
+            <tr>
+                <th>Img</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>ItemType</th>
+                <th>Promotion</th>
+
+
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>
+                        @if (!string.IsNullOrEmpty(item.ImagePath))
+                        {
+                            <img src="/images/@item.ImagePath" alt="Item Image" style="max-width: 100px; max-height: 100px;" />
+
+                        }
+                        else
+                        {
+
+                            <span>No Image</span>
+                        }
+                    </td>
+
+
+                    <td>@item.Name</td>
+                    <td>@item.Description</td>
+                    <td>@item.Price</td>
+                    <td>@item.Stock</td>
+                    <td>@item.ItemTypeName</td>
+
+                    @if (item.PromotionId!=0)
+                    {
+                        <td>
+                            @item.PromotionCode
+                        </td>
+                    }else{
+                        <td>
+                            No
+                        </td>
+                    } 
+                    <td>
+                        <button class="action-button edit-button" @onclick="@(() => NavigateToEditPage(item.Id))">Edit</button>
+                        <button class="action-button delete-button" @onclick="@(() => DeleteProduct(item.Id))">Delete</button>
+                        <button class="action-button edit-button" @onclick="@(() => NavigateToUploadImgPage(item.Id))">UploadImg</button>
+                        @if (item.PromotionId != 0)
+                        {
+                            <button class="action-button delete-button" @onclick="@(() => DeletePromotion(item.Id))">DeletePromotion</button>
+                           
+                        }
+                        else{
+                            <button class="action-button edit-button" @onclick="@(() => NavigateToPromotion(item.Id))">Promotion</button>
+                        }
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+    <div class="pagination-container">
+        <button class="pagination-button" @onclick="PreviousPage" disabled="@(currentPage == 1)">Previous Page</button>
+        <button class="pagination-button" @onclick="NextPage" disabled="@(currentPage == totalPages)">Next Page</button>
+    </div>
+</div>
+
+
+@code {
+    private List<Item> items = new List<Item>();
+    private int currentPage = 1;
+    private int pageSize = 5;
+    private int totalCount;
+    private int totalPages;
+
+    private List<ItemType> itemTypeList = new List<ItemType>();
+    private string searchItemName="";
+    private int searchItemTypeId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        itemTypeList = await Http.GetFromJsonAsync<List<ItemType>>($"api/ItemType/getItemTypeList");
+        await LoadProducts();
+    }
+    private async Task SearchItems()
+    {
+
+            currentPage=1;
+            await LoadProducts();
+    }
+    
+    private async Task LoadProducts()
+    {
+        totalCount = await Http.GetFromJsonAsync<int>($"api/Item/getTotalCount?searchItemName={searchItemName}&searchItemTypeId={searchItemTypeId}");
+        items = await Http.GetFromJsonAsync<List<Item>>($"api/Item?page={currentPage}&pageSize={pageSize}&searchItemTypeId={searchItemTypeId}&searchItemName={searchItemName}");
+
+        totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+    }
+    private async Task PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadProducts();
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            await LoadProducts();
+        }
+    }
+
+    private void NavigateToEditPage(int id)
+    {
+        Navigation.NavigateTo($"/item/editItem/{id}");
+    }
+    private void NavigateToUploadImgPage(int id)
+    {
+        Navigation.NavigateTo($"/item/uploadImage/{id}");
+    }
+    private void NavigateToPromotion(int id)
+    {
+        Navigation.NavigateTo($"/item/selectPromotion/{id}");
+    }
+    
+    private async Task DeleteProduct(int id)
+    {
+        var confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete it？");
+        if (confirmed)
+        {
+            var response = await Http.DeleteAsync($"api/Item/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadProducts();
+            }
+        }
+    }
+    private async Task DeletePromotion(int id)
+    {
+        var confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete it？");
+        if (confirmed)
+        {
+            var response = await Http.DeleteAsync($"api/Item/DeletePromotion/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadProducts();
+            }
+        }
+    }
+    
+    private void NavigateToCreatePage()
+    {
+        Navigation.NavigateTo("/item/createItem");
+    }
+}

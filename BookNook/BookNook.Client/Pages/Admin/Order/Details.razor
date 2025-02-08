@@ -1,0 +1,134 @@
+﻿@page "/order/details/{Id}"
+@using BookNook.Client.Layout
+@layout AdminLayout
+@rendermode InteractiveWebAssembly
+@using BookNook.Client.Models;
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IJSRuntime JsRuntime
+
+<style>
+    .order-container {
+    width: 80%;
+    margin: 0 auto;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .order-info {
+    margin-bottom: 20px;
+    }
+
+    .order-info p {
+    margin: 5px 0;
+    }
+
+    .order-details {
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+    }
+
+    .order-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    }
+
+    .item-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    margin-right: 20px;
+    border-radius: 4px;
+    }
+
+    .item-info {
+    flex-grow: 1;
+    }
+
+    .item-info h3 {
+    margin: 0;
+    font-size: 18px;
+    }
+
+    .item-info p {
+    margin: 5px 0;
+    }
+
+    .back-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    }
+
+    .back-button:hover {
+    background-color: #0056b3;
+    }
+</style>
+
+<div class="order-container">
+   
+    <h2>Ordering Information</h2>
+    <div class="order-info">
+        <p><strong>UserName:</strong> @placeOrderModel.UserName</p>
+        <p><strong>RecipientName:</strong> @placeOrderModel.RecipientName</p>
+        <p><strong>RecipientPhone:</strong> @placeOrderModel.RecipientPhone</p>
+        <p><strong>RecipientAddress:</strong> @placeOrderModel.RecipientAddress</p>
+        <p><strong>TotalPrice:</strong> $@placeOrderModel.TotalPrice</p>
+        <p><strong>OrderDate:</strong> @placeOrderModel.OrderDate.ToString("yyyy-MM-dd HH:mm:ss")</p>
+        <p><strong>PaymentMethod:</strong> @placeOrderModel.PaymentMethod</p>
+        <p><strong>PaymentAmount:</strong> @placeOrderModel.PaymentAmount</p>
+        <p><strong>TrackingNumber:</strong> @placeOrderModel.TrackingNumber</p>
+        <p><strong>Status:</strong> @placeOrderModel.Status</p>
+        <p><strong>ShipmentDate:</strong> @placeOrderModel.ShipmentDate.ToString("yyyy-MM-dd HH:mm:ss")</p>
+    </div>
+
+    <div class="order-details">
+        <h2>order details</h2>
+
+        @foreach (var item in placeOrderModel.orderDetailsList)
+        {
+            <div class="order-item">
+                <img class="item-image" src="/images/@item.image" alt="@item.ItemName" />
+                <div class="item-info">
+                    <h3>@item.ItemName</h3>
+                    <p><strong>TotalPrice:</strong> $@item.TotalPrice</p>
+                    <p><strong>Quantity:</strong> @item.Quantity</p>
+                </div>
+            </div>
+        }
+
+    </div>
+    <button class="back-button" @onclick="GoBack">return</button>
+</div>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    private string? ErrorMessage;
+    private PlaceOrderModel placeOrderModel=new PlaceOrderModel()
+    {
+        orderDetailsList=new List<OrderDetails>()
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        placeOrderModel = await Http.GetFromJsonAsync<PlaceOrderModel>($"api/Order/getItemById?id={Id}");
+    }
+
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/order/index");
+    }
+
+}

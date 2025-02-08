@@ -1,0 +1,14 @@
+@* 在文件底部的 Scripts 部分添加 *@
+<script>
+    window.navMenuFunctions = {
+        initialize: function (dotNetRef) {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function () {
+                    dotNetRef.invokeMethodAsync('OnPageLoaded');
+                });
+            } else {
+                dotNetRef.invokeMethodAsync('OnPageLoaded');
+            }
+        }
+    };
+</script> 

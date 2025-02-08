@@ -1,0 +1,185 @@
+﻿@page "/userItem/itemDetail/{ProductId:int}"
+@using BookNook.Client.Layout
+@layout UserLayout
+@rendermode InteractiveWebAssembly
+@using BookNook.Client.Models;
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IJSRuntime JsRuntime
+
+<style>
+    .product-detail-container {
+    width: 80%;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    }
+
+    .product-detail-image {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    margin-bottom: 20px;
+    }
+
+    .product-detail-name {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    }
+
+    .product-detail-description {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 10px;
+    }
+
+    .product-detail-price {
+    font-size: 20px;
+    font-weight: 600;
+    color: #e74c3c;
+    margin-bottom: 20px;
+    }
+
+        /* 原价样式 */
+    .original-price {
+        text-decoration: line-through;
+        color: #999;
+        margin-right: 10px;
+    }
+
+    /* 产品类型样式 */
+    .product-type {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 5px;
+    }
+
+    .quantity-input {
+    width: 60px;
+    padding: 5px;
+    margin-right: 10px;
+    }
+
+    .add-to-cart-button {
+    padding: 5px 15px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    }
+
+    .add-to-cart-button:hover {
+    background-color: #0056b3;
+    }
+
+    .add-to-cart-button:hover {
+    background-color: #0056b3;
+    }
+
+    .error-message {
+        margin-top: 20px;
+        padding: 12px;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 5px;
+        color: #721c24;
+        text-align: center;
+    }
+   
+</style>
+
+<div class="product-detail-container">
+    @if (product != null)
+    {
+        <img class="product-detail-image" src="/images/@product.ImagePath" alt="@product.Name" />
+        <h2 class="product-detail-name">@product.Name</h2>
+        <p class="product-type">Type:@product.ItemTypeName</p>
+        <p class="product-detail-description">@product.Description</p>
+
+        <p>
+            @if (@product.PromotionId == 0)
+            {
+                <span class="product-detail-price">$@product.Price</span>
+            }
+            else
+            {
+                <span class="original-price">$@product.Price</span>
+                <span class="product-detail-price">$@product.DiscountedPrice</span>
+            }
+        </p>
+
+        <input type="number" class="quantity-input" @bind-value="quantity" min="1" />
+        <button class="add-to-cart-button" @onclick="AddToCart">Add to Cart</button>
+    }
+    else
+    {
+        <p>Product not found.</p>
+    }
+</div>
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="error-message">
+        @ErrorMessage
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int ProductId { get; set; }
+    private string type;
+    
+    private Item product = new Item();
+
+    private int quantity = 1;
+    private string? ErrorMessage;
+    private Cart cart = new Cart();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // 解析查询字符串获取额外参数
+        var uri = new Uri(Navigation.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        type = query["type"];
+
+        // 对获取到的参数进行解码
+        type = System.Net.WebUtility.UrlDecode(type);
+
+        product = await Http.GetFromJsonAsync<Item>($"api/Item/getItemById?id={ProductId}");
+    }
+
+
+    private async Task AddToCart()
+    {
+        try
+        {
+            cart.UserId = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "userId");
+            cart.ItemId = product.Id;
+            cart.ItemNumber = quantity;
+
+            var response = await Http.PostAsJsonAsync("api/Cart", cart);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/userCart/index");
+            }
+            else
+            {
+                // Capture error message and display it
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error from server: {error}"); // Debugging log
+                ErrorMessage = error;
+                StateHasChanged(); // Ensure UI is updated
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"An unexpected error occurred: {ex.Message}";
+            StateHasChanged(); // Ensure UI is updated
+        }
+    }
+
+}

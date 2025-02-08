@@ -1,0 +1,191 @@
+﻿@page "/Account/register"
+@rendermode InteractiveWebAssembly
+@using System.ComponentModel.DataAnnotations
+@inject NavigationManager Navigation
+@inject HttpClient Http
+
+<style>
+    /* 整体容器样式 */
+    .register-container {
+        max-width: 400px;
+        margin: 10vh auto;
+        padding: 30px;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+        /* 标题样式 */
+        .register-container h3 {
+            text-align: center;
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+    /* 表单组样式 */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+            .form-group input:focus {
+                border-color: #007BFF;
+                outline: none;
+                box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+            }
+
+    /* 提交按钮样式 */
+    .btn-primary {
+        width: 100%;
+        padding: 12px;
+        background-color: #007BFF;
+        border: none;
+        border-radius: 5px;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+    /* 错误消息样式 */
+    .alert-danger {
+        padding: 12px;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 5px;
+        color: #721c24;
+        text-align: center;
+    }
+
+    /* 返回登录链接样式 */
+    .register-container p {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+        .register-container p a {
+            color: #007BFF;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+            .register-container p a:hover {
+                color: #0056b3;
+                text-decoration: underline;
+            }
+</style>
+
+<div class="register-container">
+    <h3>Register</h3>
+
+    <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
+        <DataAnnotationsValidator />
+
+        <div class="form-group">
+            <label for="UserName">UserName</label>
+            <InputText id="UserName" @bind-Value="registerModel.UserName" class="form-control" />
+            <ValidationMessage For="@(() => registerModel.UserName)" />
+        </div>
+
+        <div class="form-group">
+            <label for="Password">Password</label>
+            <InputText id="Password" @bind-Value="registerModel.Password" class="form-control" type="password" />
+            <ValidationMessage For="@(() => registerModel.Password)" />
+        </div>
+
+        <div class="form-group">
+            <label for="FirstName">FirstName</label>
+            <InputText id="FirstName" @bind-Value="registerModel.FirstName" class="form-control" />
+            <ValidationMessage For="@(() => registerModel.FirstName)" />
+        </div>
+        <div class="form-group">
+            <label for="LastName">LastName</label>
+            <InputText id="LastName" @bind-Value="registerModel.LastName" class="form-control" />
+            <ValidationMessage For="@(() => registerModel.LastName)" />
+        </div>
+        <div class="form-group">
+            <label for="Email">Email</label>
+            <InputText id="Email" @bind-Value="registerModel.Email" class="form-control" />
+            <ValidationMessage For="@(() => registerModel.Email)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Register</button>
+    </EditForm>
+
+
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-danger mt-3">
+            @ErrorMessage
+        </div>
+    }
+
+
+    <p>
+        <a href="/Account/login">Back to Login</a>
+    </p>
+</div>
+
+@code {
+    private RegisterModel registerModel = new RegisterModel();
+    private string? ErrorMessage;
+    private async Task HandleRegister()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/Account/register", registerModel);
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                ErrorMessage = await response.Content.ReadAsStringAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"An error occurred: {ex.Message}";
+        }
+
+    }
+
+    public class RegisterModel
+    {
+        [Required(ErrorMessage = "UserName is required.")]
+        public string? UserName { get; set; }
+        [Required(ErrorMessage = "Password is required.")]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{6,}$",
+            ErrorMessage = "The password length must be greater than six characters and contain uppercase and lowercase letters, numbers, and at least one non alphanumeric character")]
+        public string? Password { get; set; }
+
+        [Required(ErrorMessage = "FirstName is required.")]
+        public string? FirstName { get; set; }
+        [Required(ErrorMessage = "LastName is required.")]
+        public string? LastName { get; set; }
+        [EmailAddress(ErrorMessage = "Please enter a valid email address")]
+        [Required(ErrorMessage = "Email is required.")]
+        public string? Email { get; set; }
+    }
+}

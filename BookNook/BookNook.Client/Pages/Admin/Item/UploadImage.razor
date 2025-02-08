@@ -1,0 +1,167 @@
+﻿@page "/item/uploadImage/{Id:int}"
+@using BookNook.Client.Layout
+@layout AdminLayout
+@rendermode InteractiveWebAssembly
+@using BookNook.Client.Models;
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IJSRuntime JsRuntime
+
+    <style>
+        h3 {
+            color: #2c3e50;
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .form-wrapper {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 350px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 16px;
+            color: #34495e;
+            margin-bottom: 5px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #3498db;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-bottom:10px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #2980b9;
+        }
+
+    button:not([type="submit"]) {
+         width: 100%;
+            padding: 10px;
+        background-color: #6c757d;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+    }
+
+        button:not([type="submit"]):hover {
+            background-color: #5a6268;
+        }
+    </style>
+
+<div class="form-wrapper">
+    <h3>upload Image</h3>
+    <EditForm Model="@uploadModel" OnValidSubmit="HandleSubmit">
+        <div class="form-group">
+            <label for="imageFile">Select an image</label>
+            <InputFile type="file" id="imageFile" OnChange="HandleFileSelected" class="form-control" />
+        </div>
+        <button type="submit">Upload</button>
+        <button @onclick="CancelCreate">Cancel</button>
+    </EditForm>
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="error-message">
+            @ErrorMessage
+        </div>
+    }
+</div>
+
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private string? ErrorMessage;
+    private class UploadModel
+    {
+        public string FileName { get; set; }
+        public byte[] FileData { get; set; }
+    }
+    private class ImgPathBean
+    {
+        public int Id { get; set; }
+        public string ImgPath { get; set; }
+    }
+    private UploadModel uploadModel = new UploadModel();
+    private IBrowserFile selectedFile;
+    private ImgPathBean imgPathBean = new ImgPathBean();
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (selectedFile != null)
+        {
+            var ms = new MemoryStream();
+            await selectedFile.OpenReadStream().CopyToAsync(ms);
+            uploadModel.FileData = ms.ToArray();
+            uploadModel.FileName = selectedFile.Name;
+
+            var formData = new MultipartFormDataContent();
+            var fileContent = new ByteArrayContent(uploadModel.FileData);
+            formData.Add(fileContent, "image", uploadModel.FileName);
+            var response = await Http.PostAsync("api/item/ImageUpload", formData);
+
+            if (response.IsSuccessStatusCode)
+            {
+                imgPathBean.Id = Id;
+                imgPathBean.ImgPath = uploadModel.FileName;
+                string path = selectedFile.Name;
+                var res = await Http.PutAsJsonAsync($"api/Item/SetImgPathById/{Id}", path);
+                if (res.IsSuccessStatusCode)
+                { 
+                    Navigation.NavigateTo("/item/index");
+                }
+            }
+            else
+            {
+                
+            }
+        }else{
+            ErrorMessage = "Please select an image";
+        }
+    }
+    private void CancelCreate()
+    {
+        Navigation.NavigateTo("/item/index");
+    }
+}
