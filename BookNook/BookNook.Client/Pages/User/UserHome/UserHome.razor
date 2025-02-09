@@ -99,7 +99,17 @@
             <div class="product-info">
                 <h3 class="product-name">@product.Name</h3>
                 <p class="product-type">Type: @product.ItemTypeName</p>
-                <p class="product-description">@product.Description</p>
+                <p class="product-type">Author: @product.Author</p> 
+                <p class="product-description">
+                    @if (!string.IsNullOrEmpty(product.Description) && product.Description.Length > 100)
+                    {
+                        @($"{product.Description.Substring(0, 100)}...") 
+                    }
+                    else
+                    {
+                        @product.Description
+                    }
+                </p>
                 <p>
                     @if (@product.PromotionId == 0)
                     {
@@ -114,13 +124,10 @@
             </div>
         </div>
     }
-
-
 </div>
 
 <h2 class="section-title">Promotional Products</h2>
 <div class="product-list">
-
     @foreach (var product in promotionalProducts)
     {
         <div class="product-card" @onclick="@(() => NavigateToProductDetail(product.Id))">
@@ -128,7 +135,17 @@
             <div class="product-info">
                 <h3 class="product-name">@product.Name</h3>
                 <p class="product-type">Type: @product.ItemTypeName</p>
-                <p class="product-description">@product.Description</p>
+                <p class="product-type">Author: @product.Author</p> 
+                <p class="product-description">
+                    @if (!string.IsNullOrEmpty(product.Description) && product.Description.Length > 100)
+                    {
+                        @($"{product.Description.Substring(0, 100)}...") 
+                    }
+                    else
+                    {
+                        @product.Description
+                    }
+                </p>
                 <p>
                     @if (@product.PromotionId == 0)
                     {
@@ -139,27 +156,25 @@
                         <span class="original-price">$@product.Price</span>
                         <span class="product-price">$@product.DiscountedPrice</span>
                     }
-                    
                 </p>
             </div>
         </div>
     }
-
 </div>
-
 
 @code {
     private List<Item> hotSellingProducts = new List<Item>();
     private List<Item> promotionalProducts = new List<Item>();
-    
+
     protected override async Task OnInitializedAsync()
     {
         await LoadProducts();
     }
+
     private async Task LoadProducts()
     {
-        hotSellingProducts = await Http.GetFromJsonAsync<List<Item>>($"api/Item/GetHotSellingProducts");
-        promotionalProducts = await Http.GetFromJsonAsync<List<Item>>($"api/Item/GetPromotionalProducts");
+        hotSellingProducts = await Http.GetFromJsonAsync<List<Item>>("api/Item/GetHotSellingProducts");
+        promotionalProducts = await Http.GetFromJsonAsync<List<Item>>("api/Item/GetPromotionalProducts");
     }
 
     private void NavigateToProductDetail(int productId)

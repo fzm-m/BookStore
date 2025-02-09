@@ -93,5 +93,37 @@ namespace BookNook.Controller
             }
            
         }
+
+        [HttpGet("GetReviewsByItemId/{itemId}")]
+        public IActionResult GetReviewsByItemId(int itemId)
+        {
+            try
+            {
+                // Fetch comments for the selected item
+                var reviews = _DbContext.Reviews
+                    .Where(r => r.ItemId == itemId)
+                    .OrderByDescending(r => r.ReviewDate) // Show newest comments first
+                    .ToList();
+
+                // Attach item details
+                foreach (var review in reviews)
+                {
+                    var item = _DbContext.Items.FirstOrDefault(i => i.Id == review.ItemId);
+                    if (item != null)
+                    {
+                        review.image = item.ImagePath;
+                        review.ItemName = item.Name;
+                    }
+                }
+
+                return Ok(reviews);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error: {ex.Message}");
+            }
+        }
+
+
     }
 }

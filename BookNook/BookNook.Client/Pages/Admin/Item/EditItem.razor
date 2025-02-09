@@ -1,4 +1,4 @@
-﻿@page "/item/editItem/{Id:int}"
+﻿@page "/item/editItem/{ItemId:int}"
 @using BookNook.Client.Layout
 @layout AdminLayout
 @rendermode InteractiveWebAssembly
@@ -7,12 +7,11 @@
 @inject HttpClient Http
 @inject IJSRuntime JsRuntime
 
-
 <style>
-    /* 整体容器样式 */
-    .edit-product-container {
-        max-width: 400px;
-        margin: 50px auto;
+    /* Container styling */
+    .edit-item-container {
+        max-width: 800px; /* Increased width */
+        margin: 30px auto; /* Adjust margin for balance */
         padding: 30px;
         background-color: #fff;
         border-radius: 10px;
@@ -20,22 +19,8 @@
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-        /* 标题样式 */
-        .edit-product-container h3 {
-            text-align: center;
-            color: #333;
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
 
-    /* 加载提示样式 */
-    .loading-message {
-        color: #999;
-        font-size: 16px;
-        text-align: center;
-    }
-
-    /* 表单组样式 */
+    /* Form group styling */
     .form-group {
         margin-bottom: 20px;
     }
@@ -62,7 +47,7 @@
                 box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
             }
 
-    /* 按钮样式 */
+    /* Button styling */
     button {
         padding: 12px 20px;
         border: none;
@@ -91,7 +76,7 @@
                 background-color: #5a6268;
             }
 
-    /* 错误消息样式 */
+    /* Error message styling */
     .error-message {
         margin-top: 20px;
         padding: 12px;
@@ -103,43 +88,27 @@
     }
 </style>
 
-<div class="edit-product-container">
-    <h3>Edit Product</h3>
+<div class="edit-item-container">
+    <EditForm Model="@item" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
 
-
-    @if (item == null)
-    {
-        <p class="loading-message">Loading...</p>
-    }
-    else
-    {
-        <EditForm Model="@item" OnValidSubmit="HandleValidSubmit">
-            <DataAnnotationsValidator />
-
-            <div class="form-group">
-                <label for="Name">Name</label>
-                <InputText id="Name" @bind-Value="item.Name" class="form-control" />
-                <ValidationMessage For="@(() => item.Name)" />
-            </div>
-
-             <div class="form-group">
-            <label for="Description">Description</label>
-            <InputText id="Description" @bind-Value="item.Description" class="form-control" />
-            <ValidationMessage For="@(() => item.Description)" />
-        </div>
+        <!-- Name Field -->
         <div class="form-group">
-            <label for="Price">Price</label>
-            <InputNumber id="Price" @bind-Value="item.Price" class="form-control" />
-            <ValidationMessage For="@(() => item.Price)" />
+            <label for="Name">Name</label>
+            <InputText id="Name" @bind-Value="item.Name" class="form-control" />
+            <ValidationMessage For="@(() => item.Name)" />
         </div>
-        <div class="form-group">
-            <label for="Stock">Stock</label>
-            <InputNumber id="Stock" @bind-Value="item.Stock" class="form-control" />
-            <ValidationMessage For="@(() => item.Stock)" />
-        </div>
-        <div class="form-group">
-            <label for="ItemTypeId">ItemTypeId</label>
 
+        <!-- Author Field (New) -->
+        <div class="form-group">
+            <label for="Author">Author</label>
+            <InputText id="Author" @bind-Value="item.Author" class="form-control" />
+            <ValidationMessage For="@(() => item.Author)" />
+        </div>
+
+        <!-- Item Type Dropdown -->
+        <div class="form-group">
+            <label for="ItemTypeId">Item Type</label>
             <InputSelect id="ItemTypeId" @bind-Value="item.ItemTypeId" class="form-control">
                 <option value="">-- Select Item Type --</option>
                 @foreach (var itemType in itemTypeList)
@@ -148,45 +117,105 @@
                 }
             </InputSelect>
             <ValidationMessage For="@(() => item.ItemTypeId)" />
-        </div> 
+        </div>
 
-            <button type="submit">Save</button>
-            <button @onclick="CancelEdit">Cancel</button>
-        </EditForm>
+        <!-- Description Field -->
+        <div class="form-group">
+            <label for="Description">Description</label>
+            <InputTextArea id="Description" @bind-Value="item.Description" class="form-control description-textarea" rows="4"></InputTextArea>
+            <ValidationMessage For="@(() => item.Description)" />
+        </div>
 
-        @if (!string.IsNullOrEmpty(ErrorMessage))
-        {
-            <div class="error-message">
-                @ErrorMessage
-            </div>
-        }
+        <!-- Price Field -->
+        <div class="form-group">
+            <label for="Price">Price</label>
+            <InputNumber id="Price" @bind-Value="item.Price" class="form-control" />
+            <ValidationMessage For="@(() => item.Price)" />
+        </div>
+
+        <!-- Stock Field -->
+        <div class="form-group">
+            <label for="Stock">Stock</label>
+            <InputNumber id="Stock" @bind-Value="item.Stock" class="form-control" />
+            <ValidationMessage For="@(() => item.Stock)" />
+        </div>
+
+        <!-- Release Date Field (New) -->
+        <div class="form-group">
+            <label for="ReleaseDate">Release Date</label>
+            <InputDate id="ReleaseDate" @bind-Value="item.ReleaseDate" class="form-control" />
+            <ValidationMessage For="@(() => item.ReleaseDate)" />
+        </div>
+
+        <button type="submit">Save</button>
+        <button @onclick="CancelEdit">Cancel</button>
+    </EditForm>
+
+    <!-- Error message display -->
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="error-message">
+            @ErrorMessage
+        </div>
     }
-
 </div>
 
 @code {
     [Parameter]
-    public int Id { get; set; }
+    public int ItemId { get; set; } // Gets Item ID from URL
+
     private string? ErrorMessage;
-    private Item item;
+    private Item item = new Item()
+        {
+            ReleaseDate = DateTime.Today // ✅ Default to today's date
+        };
+
     private List<ItemType> itemTypeList = new List<ItemType>();
 
+    // Load item details for editing
     protected override async Task OnInitializedAsync()
     {
-        itemTypeList = await Http.GetFromJsonAsync<List<ItemType>>($"api/ItemType/getItemTypeList");
-        item = await Http.GetFromJsonAsync<Item>($"api/Item/getItemById?id={Id}");
+        try
+        {
+            // Fetch item details from API
+            item = await Http.GetFromJsonAsync<Item>($"api/Item/getItemById?id={ItemId}");
+
+            // If no release date exists, set it to today
+            if (item.ReleaseDate == default)
+            {
+                item.ReleaseDate = DateTime.Today;
+            }
+
+            // Fetch available item types
+            itemTypeList = await Http.GetFromJsonAsync<List<ItemType>>("api/ItemType/getItemTypeList");
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to load item: {ex.Message}";
+        }
     }
 
+    // Handle form submission for updating the item
     private async Task HandleValidSubmit()
     {
         try
         {
-            var response = await Http.PutAsJsonAsync($"api/Item/{item.Id}", item);
+            if (item.ItemTypeId == 0)
+            {
+                ErrorMessage = "Please select an item type.";
+                return;
+            }
+
+            var response = await Http.PutAsJsonAsync($"api/Item/updateItem/{ItemId}", item);
+
+
             if (response.IsSuccessStatusCode)
             {
-
                 Navigation.NavigateTo("/item/index");
-
+            }
+            else
+            {
+                ErrorMessage = "Failed to update item.";
             }
         }
         catch (Exception ex)
@@ -195,6 +224,7 @@
         }
     }
 
+    // Cancel editing and navigate back
     private void CancelEdit()
     {
         Navigation.NavigateTo("/item/index");

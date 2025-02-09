@@ -7,84 +7,83 @@
 @inject HttpClient Http
 @inject IJSRuntime JsRuntime
 
-
 <style>
-    /* 整体容器样式 */
+    /* Container styling */
     .edit-item-container {
-    max-width: 400px;
-    margin: 50px auto;
-    padding: 30px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 800px; /* Increased width */
+        margin: 30px auto; /* Adjust margin for balance */
+        padding: 30px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    /* 表单组样式 */
+    /* Form group styling */
     .form-group {
-    margin-bottom: 20px;
+        margin-bottom: 20px;
     }
 
-    .form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #333;
-    }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
 
-    .form-group input {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-    transition: border-color 0.3s ease;
-    }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
 
-    .form-group input:focus {
-    border-color: #007BFF;
-    outline: none;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-    }
+            .form-group input:focus {
+                border-color: #007BFF;
+                outline: none;
+                box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+            }
 
-    /* 按钮样式 */
+    /* Button styling */
     button {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-    margin-right: 10px;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+        margin-right: 10px;
     }
 
-    button[type="submit"] {
-    background-color: #007BFF;
-    color: #fff;
-    }
+        button[type="submit"] {
+            background-color: #007BFF;
+            color: #fff;
+        }
 
-    button[type="submit"]:hover {
-    background-color: #0056b3;
-    }
+            button[type="submit"]:hover {
+                background-color: #0056b3;
+            }
 
-    button:not([type="submit"]) {
-    background-color: #6c757d;
-    color: #fff;
-    }
+        button:not([type="submit"]) {
+            background-color: #6c757d;
+            color: #fff;
+        }
 
-    button:not([type="submit"]):hover {
-    background-color: #5a6268;
-    }
+            button:not([type="submit"]):hover {
+                background-color: #5a6268;
+            }
 
-    /* 错误消息样式 */
+    /* Error message styling */
     .error-message {
-    margin-top: 20px;
-    padding: 12px;
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
-    border-radius: 5px;
-    color: #721c24;
-    text-align: center;
+        margin-top: 20px;
+        padding: 12px;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 5px;
+        color: #721c24;
+        text-align: center;
     }
 </style>
 
@@ -92,80 +91,103 @@
     <EditForm Model="@item" OnValidSubmit="HandleValidSubmit">
         <DataAnnotationsValidator />
 
+        <!-- Name Field -->
         <div class="form-group">
             <label for="Name">Name</label>
             <InputText id="Name" @bind-Value="item.Name" class="form-control" />
             <ValidationMessage For="@(() => item.Name)" />
         </div>
-        <div class="form-group">
-            <label for="Description">Description</label>
-            <InputText id="Description" @bind-Value="item.Description" class="form-control" />
-            <ValidationMessage For="@(() => item.Description)" />
-        </div>
-        <div class="form-group">
-            <label for="Price">Price</label>
-            <InputNumber id="Price" @bind-Value="item.Price" class="form-control" />
-            <ValidationMessage For="@(() => item.Price)" />
-        </div>
-        <div class="form-group">
-            <label for="Stock">Stock</label>
-            <InputNumber id="Stock" @bind-Value="item.Stock" class="form-control" />
-            <ValidationMessage For="@(() => item.Stock)" />
-        </div>
-        <div class="form-group">
-            <label for="ItemTypeId">ItemTypeId</label>
 
+        <!-- Author Field (New) -->
+        <div class="form-group">
+            <label for="Author">Author</label>
+            <InputText id="Author" @bind-Value="item.Author" class="form-control" />
+            <ValidationMessage For="@(() => item.Author)" />
+        </div>
+
+        <!-- Item Type Dropdown -->
+        <div class="form-group">
+            <label for="ItemTypeId">Item Type</label>
             <InputSelect id="ItemTypeId" @bind-Value="item.ItemTypeId" class="form-control">
                 <option value="">-- Select Item Type --</option>
                 @foreach (var itemType in itemTypeList)
                 {
-
                     <option value="@itemType.Id">@itemType.Name</option>
                 }
             </InputSelect>
             <ValidationMessage For="@(() => item.ItemTypeId)" />
         </div>
 
-      
+        <!-- Description Field -->
+        <div class="form-group">
+            <label for="Description">Description</label>
+            <InputTextArea id="Description" @bind-Value="item.Description" class="form-control description-textarea" rows="4"></InputTextArea>
+            <ValidationMessage For="@(() => item.Description)" />
+        </div>
+
+        <!-- Price Field -->
+        <div class="form-group">
+            <label for="Price">Price</label>
+            <InputNumber id="Price" @bind-Value="item.Price" class="form-control" />
+            <ValidationMessage For="@(() => item.Price)" />
+        </div>
+
+        <!-- Stock Field -->
+        <div class="form-group">
+            <label for="Stock">Stock</label>
+            <InputNumber id="Stock" @bind-Value="item.Stock" class="form-control" />
+            <ValidationMessage For="@(() => item.Stock)" />
+        </div>
+
+        <!-- Release Date Field (New) -->
+        <div class="form-group">
+            <label for="ReleaseDate">Release Date</label>
+            <InputDate id="ReleaseDate" @bind-Value="item.ReleaseDate" class="form-control" />
+            <ValidationMessage For="@(() => item.ReleaseDate)" />
+        </div>
 
         <button type="submit">Save</button>
         <button @onclick="CancelCreate">Cancel</button>
-    </EditForm> 
+    </EditForm>
 
-
+    <!-- Error message display -->
     @if (!string.IsNullOrEmpty(ErrorMessage))
     {
         <div class="error-message">
             @ErrorMessage
         </div>
     }
-
 </div>
+
 @code {
     private string? ErrorMessage;
-    private Item item = new Item();
-    private List<ItemType> itemTypeList = new List<ItemType>();
-   
 
+    // Initialize the item with today's date as default
+    private Item item = new Item()
+        {
+            ReleaseDate = DateTime.Today // ✅ Default to today's date
+        };
+
+    private List<ItemType> itemTypeList = new List<ItemType>();
+
+    // Fetch available item types on page load
     protected override async Task OnInitializedAsync()
     {
-        itemTypeList = await Http.GetFromJsonAsync<List<ItemType>>($"api/ItemType/getItemTypeList");
+        itemTypeList = await Http.GetFromJsonAsync<List<ItemType>>("api/ItemType/getItemTypeList");
     }
-   
 
+    // Handle form submission
     private async Task HandleValidSubmit()
     {
         try
         {
-            if (item.ItemTypeId==0)
+            if (item.ItemTypeId == 0)
             {
-                ErrorMessage = "Please select type";
+                ErrorMessage = "Please select an item type.";
                 return;
             }
 
-       
-
-            var response = await Http.PostAsJsonAsync($"api/Item/CreateProduct", item);
+            var response = await Http.PostAsJsonAsync("api/Item/CreateProduct", item);
             if (response.IsSuccessStatusCode)
             {
                 Navigation.NavigateTo("/item/index");
@@ -177,8 +199,11 @@
         }
     }
 
+    // Cancel creation and navigate back
     private void CancelCreate()
     {
         Navigation.NavigateTo("/item/index");
     }
 }
+
+

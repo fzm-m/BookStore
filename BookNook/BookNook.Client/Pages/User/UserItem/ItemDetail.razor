@@ -19,99 +19,248 @@
 
     /* Back Button */
     .back-button {
-        padding: 8px 15px;
+        padding: 10px 18px;
         background-color: #6c757d;
         color: white;
         border: none;
-        border-radius: 4px;
+        border-radius: 5px;
         cursor: pointer;
         margin-bottom: 20px;
-        display: block;
+        display: inline-block;
+        transition: background-color 0.3s ease;
     }
 
         .back-button:hover {
             background-color: #5a6268;
         }
 
+    /* Product Image */
     .product-detail-image {
         max-width: 100%;
         height: auto;
         display: block;
         margin: 0 auto;
         object-fit: contain;
-        max-height: 300px;
+        max-height: 350px;
+        border-radius: 5px;
+        background-color: #f8f8f8;
     }
 
+    /* Product Info */
     .product-detail-name {
-        font-size: 24px;
-        font-weight: 600;
-        margin-bottom: 10px;
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        text-align: center;
     }
 
     .product-detail-description {
         font-size: 16px;
         color: #666;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
+        text-align: justify;
     }
 
     .product-detail-price {
-        font-size: 20px;
-        font-weight: 600;
+        font-size: 22px;
+        font-weight: 700;
         color: #e74c3c;
         margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
+    /* Original Price */
     .original-price {
         text-decoration: line-through;
         color: #999;
-        margin-right: 10px;
+        font-size: 18px;
     }
 
+    /* Product Type */
     .product-type {
         font-size: 14px;
         color: #666;
-        margin-bottom: 5px;
+        margin-bottom: 10px;
     }
 
+    /* Quantity Input */
     .quantity-input {
         width: 60px;
-        padding: 5px;
+        padding: 6px;
         margin-right: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        text-align: center;
     }
 
+    /* Add to Cart Button */
     .add-to-cart-button {
-        padding: 5px 15px;
+        padding: 8px 16px;
         background-color: #007BFF;
         color: white;
         border: none;
-        border-radius: 4px;
+        border-radius: 5px;
         cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
     }
 
         .add-to-cart-button:hover {
             background-color: #0056b3;
         }
 
-    .error-message {
-        margin-top: 20px;
-        padding: 12px;
+    /* Error Message */
+    .error-message-inline {
+        margin-top: 10px;
+        padding: 8px 12px;
         background-color: #f8d7da;
         border: 1px solid #f5c6cb;
         border-radius: 5px;
         color: #721c24;
+        font-size: 14px;
+        text-align: left;
+    }
+
+
+    .review-list {
+        margin-top: 20px;
+        padding: 0; 
+    }
+
+    .review-card {
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin-bottom: 15px;
+        width: 100%;
+    }
+
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 16px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .review-rating {
+        color: #ffc107; /* Gold color for ratings */
+        font-size: 14px;
+    }
+
+    .review-date {
+        font-size: 14px;
+        color: #999;
+    }
+
+    .review-text {
+        font-size: 14px;
+        color: #555;
+        margin-top: 5px;
+    }
+
+    .no-reviews {
+        font-size: 14px;
+        color: #777;
         text-align: center;
+        margin-top: 10px;
+    }
+
+
+
+    /* "You May Also Like" Section */
+    .section-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 30px 0 20px;
+        text-align: center;
+    }
+
+    /* Recommended Products Layout */
+    .product-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        padding: 20px;
+        width: 90%;
+        margin: 0 auto;
+    }
+
+    /* Individual Product Card */
+    .product-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+    }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+    /* Recommended Product Image */
+    .product-image {
+        width: 100%;
+        height: 220px;
+        object-fit: contain;
+        display: block;
+        background-color: #f8f8f8;
+    }
+
+    /* Recommended Product Info */
+    .product-info {
+        padding: 15px;
+    }
+
+    .product-name {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        text-align: center;
+    }
+
+    .product-description {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    /* Recommended Product Price */
+    .product-price {
+        font-size: 18px;
+        font-weight: 600;
+        color: #e74c3c;
+        text-align: center;
+    }
+
+    .original-price {
+        text-decoration: line-through;
+        color: #999;
+        font-size: 16px;
+        margin-right: 5px;
     }
 </style>
 
 <div class="product-detail-container">
     <!-- Back Button -->
-    <button class="back-button" @onclick="GoBack">← Back</button>
+    <button class="back-button" @onclick="GoBack">Back</button>
 
     @if (product != null)
     {
         <img class="product-detail-image" src="/images/@product.ImagePath" alt="@product.Name" />
         <h2 class="product-detail-name">@product.Name</h2>
         <p class="product-type">Type: @product.ItemTypeName</p>
+        <p class="product-type">Author: @product.Author</p>
+        <p class="product-type">Release Date: @product.ReleaseDate.ToString("MMMM dd, yyyy")</p>
         <p class="product-detail-description">@product.Description</p>
 
         <p>
@@ -126,8 +275,17 @@
             }
         </p>
 
-        <input type="number" class="quantity-input" @bind-value="quantity" min="1" />
-        <button class="add-to-cart-button" @onclick="AddToCart">Add to Cart</button>
+        <div>
+            <input type="number" class="quantity-input" @bind-value="quantity" min="1" />
+            <button class="add-to-cart-button" @onclick="AddToCart">Add to Cart</button>
+
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="error-message-inline">
+                    @ErrorMessage
+                </div>
+            }
+        </div>
     }
     else
     {
@@ -135,32 +293,112 @@
     }
 </div>
 
-@if (!string.IsNullOrEmpty(ErrorMessage))
-{
-    <div class="error-message">
-        @ErrorMessage
-    </div>
-}
+<div class="product-detail-container">
+    <h2 class="section-title">Customer Reviews</h2>
+
+    @if (itemReviews.Count > 0)
+    {
+        <div class="review-list">
+            @foreach (var review in itemReviews)
+            {
+                <div class="review-card">
+                    <div class="review-header">
+                        <span class="review-date">Reviewed on: @review.ReviewDate.ToString("yyyy-MM-dd")</span>
+                        <span class="review-rating">Rating: @review.Rating/10</span>
+                    </div>
+                    <p class="review-text">@review.Comment</p>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="no-reviews">No reviews yet. Be the first to leave one!</p>
+    }
+</div>
+
+
+<h2 class="section-title">You May Also Like</h2>
+<div class="product-list">
+    @foreach (var product in recommendedBooks)
+    {
+        <div class="product-card" @onclick="@(() => NavigateToProductDetail(product.Id))">
+            <img class="product-image" src="/images/@product.ImagePath" alt="@product.Name" />
+            <div class="product-info">
+                <h3 class="product-name">@product.Name</h3>
+                <p class="product-type">Type: @product.ItemTypeName</p>
+                <p class="product-type">Author: @product.Author</p>
+                <p class="product-description">
+                    @if (!string.IsNullOrEmpty(product.Description) && product.Description.Length > 100)
+                    {
+                        @($"{product.Description.Substring(0, 100)}...")
+                    }
+                    else
+                    {
+                        @product.Description
+                    }
+                </p>
+                <p>
+                    @if (@product.PromotionId == 0)
+                    {
+                        <span class="product-price">$@product.Price</span>
+                    }
+                    else
+                    {
+                        <span class="original-price">$@product.Price</span>
+                        <span class="product-price">$@product.DiscountedPrice</span>
+                    }
+                </p>
+            </div>
+        </div>
+    }
+</div>
+
 
 @code {
     [Parameter]
     public int ProductId { get; set; }
-    private string type;
 
+    private string type;
     private Item product = new Item();
     private int quantity = 1;
     private string? ErrorMessage;
     private Cart cart = new Cart();
+    private List<Item> recommendedBooks = new List<Item>(); // For recommendations
+    private List<Review> itemReviews = new List<Review>(); // ✅ For reviews
 
     protected override async Task OnInitializedAsync()
     {
         var uri = new Uri(Navigation.Uri);
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
         type = query["type"];
-
         type = System.Net.WebUtility.UrlDecode(type);
 
+        // Load current product details
         product = await Http.GetFromJsonAsync<Item>($"api/Item/getItemById?id={ProductId}");
+
+        // Load recommended books from the same category
+        await LoadRecommendedBooks();
+
+        // ✅ Load reviews for the current product
+        await LoadItemReviews();
+    }
+
+    private async Task LoadRecommendedBooks()
+    {
+        recommendedBooks = await Http.GetFromJsonAsync<List<Item>>($"api/Item/GetSimilarItems/{ProductId}");
+    }
+
+    private async Task LoadItemReviews()
+    {
+        try
+        {
+            itemReviews = await Http.GetFromJsonAsync<List<Review>>($"api/Comment/GetReviewsByItemId/{ProductId}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading reviews: {ex.Message}");
+        }
     }
 
     private async Task AddToCart()
@@ -196,4 +434,10 @@
     {
         Navigation.NavigateTo("/" + (type == "home" ? "userHome/index" : "userItem/index"));
     }
+
+    private void NavigateToProductDetail(int productId)
+    {
+        Navigation.NavigateTo($"/userItem/itemDetail/{productId}?type=item");
+    }
 }
+

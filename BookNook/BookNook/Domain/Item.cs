@@ -11,12 +11,18 @@ namespace BookNook.Domain
         public string? ImagePath { get; set; }
         public int IsDelete { get; set; }
         public int ItemTypeId { get; set; }
+
         [NotMapped]
         public string? ItemTypeName { get; set; }
         public int PromotionId { get; set; }
+
         [NotMapped]
         public string? PromotionCode { get; set; }
         [NotMapped]
         public decimal DiscountedPrice { get; set; }
+
+        public string? Author { get; set; }  
+        public DateTime ReleaseDate { get; set; }  
     }
 }
+

@@ -9,7 +9,7 @@
 
 <style>
     .product-type-container {
-    max-width: 1200px;
+    max-width: 1500px;
     margin: 0 auto;
     padding: 20px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -72,6 +72,7 @@
     width: 100%;
     border-collapse: collapse;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    table-layout: auto;
     }
 
     .product-type-table th,
@@ -149,12 +150,17 @@
     <h3>Item Management</h3>
 
     <div class="search-container">
-        <!-- 搜索输入框 -->
+        <!-- Search by Item Name -->
         <div class="form-group">
             <InputText type="text" @bind-Value="searchItemName" class="form-control search-input" placeholder="Search by Item Name" />
         </div>
 
-        <!-- 下拉选择框 -->
+        <!-- Search by Author -->
+        <div class="form-group">
+            <InputText type="text" @bind-Value="searchAuthorName" class="form-control search-input" placeholder="Search by Author" />
+        </div>
+
+        <!-- Filter by Item Type -->
         <div class="form-group">
             <InputSelect id="searchItemTypeId" @bind-Value="searchItemTypeId" class="form-control search-select">
                 <option value="0">-- Select Item Type --</option>
@@ -165,12 +171,22 @@
             </InputSelect>
         </div>
 
-        <!-- 搜索按钮 -->
+        <!-- Sort by Release Date -->
+        <div class="form-group">
+            <InputSelect id="sortByReleaseDate" @bind-Value="sortByReleaseDate" class="form-control search-select">
+                <option value="none">-- Sort by Release Date --</option>
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+            </InputSelect>
+        </div>
+
+        <!-- Search Button -->
         <button class="btn btn-success search-button" @onclick="SearchItems">Search</button>
 
-        <!-- 创建按钮 -->
+        <!-- Create Button -->
         <button class="btn btn-success create-button" @onclick="NavigateToCreatePage">Create</button>
     </div>
+
 
    
 
@@ -180,6 +196,8 @@
                 <th>Img</th>
                 <th>Name</th>
                 <th>Description</th>
+                <th>Author</th>
+                <th>Release Date</th>
                 <th>Price</th>
                 <th>Stock</th>
                 <th>ItemType</th>
@@ -210,6 +228,8 @@
 
                     <td>@item.Name</td>
                     <td>@item.Description</td>
+                    <td>@item.Author</td>
+                    <td>@item.ReleaseDate.ToString("yyyy-MM-dd")</td>
                     <td>@item.Price</td>
                     <td>@item.Stock</td>
                     <td>@item.ItemTypeName</td>
@@ -259,6 +279,9 @@
     private List<ItemType> itemTypeList = new List<ItemType>();
     private string searchItemName="";
     private int searchItemTypeId;
+    private string searchAuthorName = ""; 
+    private string sortByReleaseDate = "none"; 
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -274,11 +297,14 @@
     
     private async Task LoadProducts()
     {
-        totalCount = await Http.GetFromJsonAsync<int>($"api/Item/getTotalCount?searchItemName={searchItemName}&searchItemTypeId={searchItemTypeId}");
-        items = await Http.GetFromJsonAsync<List<Item>>($"api/Item?page={currentPage}&pageSize={pageSize}&searchItemTypeId={searchItemTypeId}&searchItemName={searchItemName}");
+        string url = $"api/Item?page={currentPage}&pageSize={pageSize}&searchItemTypeId={searchItemTypeId}&searchItemName={searchItemName}&searchAuthorName={searchAuthorName}&sortByReleaseDate={sortByReleaseDate}";
+
+        totalCount = await Http.GetFromJsonAsync<int>($"api/Item/getTotalCount?searchItemName={searchItemName}&searchItemTypeId={searchItemTypeId}&searchAuthorName={searchAuthorName}");
+        items = await Http.GetFromJsonAsync<List<Item>>(url);
 
         totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
     }
+
     private async Task PreviousPage()
     {
         if (currentPage > 1)

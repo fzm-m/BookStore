@@ -9,13 +9,34 @@
 
 <style>
     .search-container {
-        text-align:center;
-        width:50%;
-        display: flex;
-        gap: 10px;
-        align-items: flex-end;
-        margin: 0px auto 20px auto;
+        display: flex; /* Align items horizontally */
+        justify-content: center; /* Center the whole container */
+        gap: 15px; /* Add spacing between elements */
+        margin: 20px auto; /* Center the search bar in the middle horizontally */
+        flex-wrap: wrap; /* Allow wrapping for smaller screens */
     }
+
+    .search-input, .search-select {
+        width: 250px; /* Set uniform width for inputs and dropdowns */
+    }
+
+        .search-select#sortByReleaseDate {
+            width: 280px; /* Slightly increase the width for the dropdown to fit the text */
+        }
+
+    .search-button {
+        height: 40px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        .search-button:hover {
+            background-color: #0056b3;
+        }
 
     .form-group {
         margin-bottom: 0;
@@ -108,25 +129,34 @@
 </style>
 
 <div class="search-container">
-    <div class="form-group">
-        <InputText type="text" @bind-Value="searchItemName" class="form-control search-input" placeholder="Search by Item Name" />
-    </div>
+    <!-- Search by Item Name -->
+    <InputText type="text" @bind-Value="searchItemName" class="form-control search-input" placeholder="Search by Item Name" />
 
-    <div class="form-group">
-        <InputSelect id="searchItemTypeId" @bind-Value="searchItemTypeId" class="form-control search-select">
-            <option value="0">-- Select Item Type --</option>
-            @foreach (var itemType in itemTypeList)
-            {
-                <option value="@itemType.Id">@itemType.Name</option>
-            }
-        </InputSelect>
-    </div>
+    <!-- Search by Author -->
+    <InputText type="text" @bind-Value="searchAuthorName" class="form-control search-input" placeholder="Search by Author" />
 
+    <!-- Filter by Item Type -->
+    <InputSelect id="searchItemTypeId" @bind-Value="searchItemTypeId" class="form-control search-select">
+        <option value="0">-- Select Item Type --</option>
+        @foreach (var itemType in itemTypeList)
+        {
+            <option value="@itemType.Id">@itemType.Name</option>
+        }
+    </InputSelect>
+
+    <!-- Sort by Release Date -->
+    <InputSelect id="sortByReleaseDate" @bind-Value="sortByReleaseDate" class="form-control search-select">
+        <option value="none">-- Sort by Release Date --</option>
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+    </InputSelect>
+
+    <!-- Search Button -->
     <button class="btn btn-success search-button" @onclick="SearchItems">Search</button>
 </div>
 
-<div class="product-list">
 
+<div class="product-list">
     @foreach (var product in products)
     {
         <div class="product-card" @onclick="@(() => NavigateToProductDetail(product.Id))">
@@ -134,30 +164,45 @@
             <div class="product-info">
                 <h3 class="product-name">@product.Name</h3>
                 <p class="product-type">Type: @product.ItemTypeName</p>
-                <p class="product-description">@product.Description</p>
-                <p>
-                    @if (@product.PromotionId == 0)
+                <p class="product-type">Author: @product.Author</p> <!-- Display the author -->
+                <!-- Truncated description -->
+                <p class="product-description">
+                    @if (!string.IsNullOrEmpty(product.Description) && product.Description.Length > 100)
                     {
-                        <span class="product-price">$@product.Price</span>
+                        @($"{product.Description.Substring(0, 100)}...") <!-- Display first 100 characters -->
                     }
                     else
                     {
-                        <span class="original-price">$@product.Price</span>
-                        <span class="product-price">$@product.DiscountedPrice</span>
+                        @product.Description
                     }
                 </p>
+
+                @if (@product.PromotionId > 0 && @product.DiscountedPrice > 0)
+                {
+                    <span class="original-price">$@product.Price</span>
+                    <span class="product-price">$@product.DiscountedPrice</span>
+                }
+                else
+                {
+                    <span class="product-price">$@product.Price</span>
+                }
+
             </div>
         </div>
     }
-
 </div>
+
 
 
 
 @code {
     private List<ItemType> itemTypeList = new List<ItemType>();
     private string searchItemName = "";
-    private int searchItemTypeId;
+    private int searchItemTypeId = 0;
+    private string searchAuthorName = ""; 
+    private string? sortByReleaseDate = "none"; 
+
+
 
     private List<Item> products = new List<Item>();
 
@@ -173,11 +218,19 @@
     }
     private async Task LoadProducts()
     {
-        products = await Http.GetFromJsonAsync<List<Item>>($"api/Item/GetItemList?searchItemTypeId={searchItemTypeId}&searchItemName={searchItemName}");
-        
+        var query = $"api/Item?searchItemTypeId={searchItemTypeId}" +
+                    $"&searchItemName={searchItemName}" +
+                    $"&searchAuthorName={searchAuthorName}" +
+                    $"&sortByReleaseDate={sortByReleaseDate}";
+
+        products = await Http.GetFromJsonAsync<List<Item>>(query);
+
+        // Debugging: Check if promotional data is correctly fetched
+        foreach (var item in products)
+        {
+            Console.WriteLine($"Item: {item.Name}, PromotionId: {item.PromotionId}, DiscountedPrice: {item.DiscountedPrice}");
+        }
     }
-
-
 
     private void NavigateToProductDetail(int productId)
     {
