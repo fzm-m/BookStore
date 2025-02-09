@@ -175,18 +175,34 @@
     .star-rating {
         display: flex;
         gap: 5px;
-        font-size: 20px;
+        font-size: 24px;
         margin: 10px 0;
     }
 
+    /* Full Star */
     .star {
-        color: #ccc;
+        color: #ccc; /* Default Gray */
     }
 
         .star.filled {
-            color: #ffc107; /* Gold color for filled stars */
+            color: #ffc107; /* Gold for Full Stars */
         }
 
+        /* Half Star (Gold on Left, Gray on Right) */
+        .star.half {
+            position: relative;
+            display: inline-block;
+            color: #ccc; /* Default Gray */
+        }
+
+            .star.half::before {
+                content: "★";
+                position: absolute;
+                left: 0;
+                width: 50%;
+                overflow: hidden;
+                color: #ffc107; /* Gold on Left Half */
+            }
 
 
     /* "You May Also Like" Section */
@@ -318,13 +334,31 @@
         <div class="average-rating">
             <span class="average-rating-value">Average Rating: @averageRating.ToString("0.0") / 10</span>
             <div class="star-rating">
+                @{
+                    double scaledRating = averageRating / 2; // Convert 10-scale to 5-scale
+                    int fullStars = (int)scaledRating; // Get whole number of stars
+                    bool hasHalfStar = (scaledRating - fullStars) >= 0.5; // Check if there's a half-star
+                }
+
                 @for (int i = 1; i <= 5; i++)
                 {
-                    <span class="star @(i <= averageRating / 2 ? "filled" : "empty")">&#9733;</span>
+                    if (i <= fullStars)
+                    {
+                        <span class="star filled">&#9733;</span> <!-- Full Star -->
+                    }
+                    else if (i == fullStars + 1 && hasHalfStar)
+                    {
+                        <span class="star half">&#9733;</span> <!-- Half Star -->
+                    }
+                    else
+                    {
+                        <span class="star empty">&#9733;</span> <!-- Empty Star -->
+                    }
                 }
             </div>
         </div>
 
+        <!-- Add the Review List Back -->
         <div class="review-list">
             @foreach (var review in itemReviews)
             {
@@ -343,6 +377,7 @@
         <p class="no-reviews">No reviews yet. Be the first to leave one!</p>
     }
 </div>
+
 
 
 
