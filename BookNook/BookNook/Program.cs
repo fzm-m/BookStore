@@ -31,12 +31,11 @@ builder.Services.AddScoped(sp =>
 
 
 
-// 添加身份验证服务
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/login"; // 未登录时重定向到登录页面
-        options.AccessDeniedPath = "/access-denied"; // 无权限时重定向的页面
+        options.LoginPath = "/login"; 
+        options.AccessDeniedPath = "/access-denied"; 
     });
 
 
@@ -59,7 +58,7 @@ IdentityBuilder identityBuilder = new IdentityBuilder(typeof(BookNookUser), type
 identityBuilder.AddEntityFrameworkStores<BookNookDbContext>().AddDefaultTokenProviders().AddUserManager<UserManager<BookNookUser>>()
     .AddRoleManager<RoleManager<BookNookRole>>();
 
-// 添加JWT认证
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -77,7 +76,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// 添加授权服务
 builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();

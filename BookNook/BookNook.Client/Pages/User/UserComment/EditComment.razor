@@ -9,7 +9,6 @@
 
 
 <style>
-    /* 整体容器样式 */
     .edit-product-container {
     max-width: 400px;
     margin: 50px auto;
@@ -20,7 +19,6 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    /* 标题样式 */
     .edit-product-container h3 {
     text-align: center;
     color: #333;
@@ -28,14 +26,12 @@
     margin-bottom: 20px;
     }
 
-    /* 加载提示样式 */
     .loading-message {
     color: #999;
     font-size: 16px;
     text-align: center;
     }
 
-    /* 表单组样式 */
     .form-group {
     margin-bottom: 20px;
     }
@@ -62,7 +58,6 @@
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
     }
 
-    /* 按钮样式 */
     button {
     padding: 12px 20px;
     border: none;
@@ -91,7 +86,6 @@
     background-color: #5a6268;
     }
 
-    /* 错误消息样式 */
     .error-message {
     margin-top: 20px;
     padding: 12px;
@@ -145,12 +139,10 @@
 
      protected override async Task OnInitializedAsync()
     {
-        // 解析查询字符串获取额外参数
         var uri = new Uri(Navigation.Uri);
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
         orderId = query["orderId"];
 
-        // 对获取到的参数进行解码
         orderId = System.Net.WebUtility.UrlDecode(orderId);
     }
 
